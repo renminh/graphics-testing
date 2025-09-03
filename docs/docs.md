@@ -16,3 +16,12 @@ int main(int argc, char **argv)
     deinitialize();
 }
 ```
+
+https://wiki.libsdl.org/SDL3/SDL_GL_CreateContext
+https://www.libsdl.org/release/SDL-1.2.15/docs/html/guidevideoopengl.html
+
+tutorial
+sibras.github.io/OpenGL4-Tutorials/docs/Tutorials/01-Tutorial1/
+
+initializing glad and SDL
+https://bcmpinc.wordpress.com/2015/08/18/creating-an-opengl-4-5-context-using-sdl2-and-glad/

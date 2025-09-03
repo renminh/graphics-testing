@@ -10,9 +10,18 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # This assumes the SDL source is available in vendored/SDL
 add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
+add_library(glad STATIC vendored/glad/src/glad.c)
+target_include_directories(glad PUBLIC vendored/glad/include)
+
+find_package(OpenGL REQUIRED)
 
 # Create your game executable target as usual
 add_executable(hello src/main.c)
 
 # Link to the actual SDL3 library.
-target_link_libraries(hello PRIVATE SDL3::SDL3)
+target_link_libraries(hello
+    PRIVATE 
+        SDL3::SDL3
+        OpenGL::GL
+        glad
+)
