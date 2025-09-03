@@ -1,18 +1,39 @@
-#include <GLES2/gl2.h>
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_opengl.h>
 #include <SDL3/SDL_video.h>
-#include <SDL3/SDL_timer.h>
 
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include "main.h"
-#include "shaders/shader.h"
-#include "utils/style.h"
+
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
+#define INIT_STR "["ANSI_COLOR_CYAN"INIT"ANSI_COLOR_RESET"]\t\t"
+#define ERROR_STR "["ANSI_COLOR_RED"ERROR"ANSI_COLOR_RESET"]\t\t"
+#define SUCCESS_STR "["ANSI_COLOR_GREEN"SUCCESS"ANSI_COLOR_RESET"]\t"
+#define END_STR "["ANSI_COLOR_YELLOW"END"ANSI_COLOR_RESET"]\t\t"
+#define INFO_STR "[INFO]\t\t"
+
+
+const char *vertexShaderSource = "#version 460 core\n"
+    "layout (location = 0) in vec3 aPos;\n"
+    "void main() {\n"
+    "gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "}\0";
+
+const char *fragmentShaderSource = "#version 460 core\n"
+    "out vec4 FragColor;\n"
+    "void main() {\n"
+    "FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "}\0";
 
 
 void initialize(SDL_Window **window, SDL_GLContext *context) {
@@ -110,43 +131,39 @@ int main(int argc, char **argv) {
     // build and compile the shader program
     // ------------------------------------
     // vertex shader
-    shader_t vertex_shader;
-    vertex_shader.source = parse_shader("shaders/triangle.vert");
-    vertex_shader.id = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader.id, 1, &(vertex_shader.source), NULL);
-    glCompileShader(vertex_shader.id);
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
 
-    glGetShaderiv(vertex_shader.id, GL_COMPILE_STATUS, &success);
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
     if (!success) {
-        glGetShaderInfoLog(vertex_shader.id, 512, NULL, infoLog);
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
         printf(ERROR_STR "Vertex: compilation failed: %s\n", infoLog);
     }
 
     // fragment shader
-    shader_t fragment_shader;
-    fragment_shader.source = parse_shader("shaders/color.frag");
-    fragment_shader.id = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader.id, 1, &(fragment_shader.source), NULL);
-    glCompileShader(fragment_shader.id);
+    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
 
-    glGetShaderiv(fragment_shader.id, GL_COMPILE_STATUS, &success);
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if (!success) {
-        glGetShaderInfoLog(fragment_shader.id, 512, NULL, infoLog);
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
         printf(ERROR_STR "Fragment: compilation failed: %s\n", infoLog);
     }
 
     // link shaders
     unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertex_shader.id);
-    glAttachShader(shaderProgram, fragment_shader.id);
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
     }
-    glDeleteShader(vertex_shader.id);
-    glDeleteShader(fragment_shader.id);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
 
     // setup vertex data and buffers then configure vertex attributes
     // ----------------------------------
@@ -181,8 +198,6 @@ int main(int argc, char **argv) {
     bool toggle_polygon_mode = false;
 
     SDL_Event event;
-
-    uint64_t ticks;
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT) {
@@ -197,25 +212,20 @@ int main(int argc, char **argv) {
             }
         }
 
-
-        ticks = SDL_GetTicks();
-        float time_value = (float) ticks / 1000;
-        float green_value = (sin(time_value / 2.0f)) + 0.5f;
-        int vertex_color_location = glGetUniformLocation(shaderProgram, "vertex_color");
-
-
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
-        glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // swap front and back framebuffer
         SDL_GL_SwapWindow(window);
+
     }
 
+
     deinitialize(&window, &context);
+
     return 0;
 }

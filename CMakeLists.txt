@@ -16,7 +16,7 @@ target_include_directories(glad PUBLIC vendored/glad/include)
 find_package(OpenGL REQUIRED)
 
 # Create your game executable target as usual
-add_executable(hello src/main.c)
+add_executable(hello src/main.c src/shaders/shader.c)
 
 # Link to the actual SDL3 library.
 target_link_libraries(hello
@@ -24,4 +24,5 @@ target_link_libraries(hello
         SDL3::SDL3
         OpenGL::GL
         glad
+        m
 )
