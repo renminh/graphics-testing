@@ -1,4 +1,3 @@
-#include <GLES2/gl2.h>
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -7,96 +6,13 @@
 #include <SDL3/SDL_timer.h>
 
 #include <math.h>
-#include <stdio.h>
+// #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "main.h"
+
+#include "graphics.h"
 #include "shaders/shader.h"
-#include "utils/style.h"
-
-
-void initialize(SDL_Window **window, SDL_GLContext *context) {
-    printf(INIT_STR "Initializing OpenGL and SDL Subsystems\n");
-
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_ERROR, 
-            ERROR_STR "Couldn't initialize SDL subsystems: %s\n", SDL_GetError()
-        );
-        SDL_Quit();
-        exit(1);
-    }
-
-    SDL_GL_LoadLibrary(NULL);
-
-    // using core 4.6
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-    SDL_GL_SetAttribute(
-        SDL_GL_CONTEXT_PROFILE_MASK,
-        SDL_GL_CONTEXT_PROFILE_CORE
-    );
-
-    // ensure double buffering is on with 24bit Z buffer
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
-    *window = SDL_CreateWindow(
-        WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_FLAGS
-    );
-
-    if (*window == NULL) {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_ERROR,
-            ERROR_STR "Couldn't create SDL window: %s\n",
-            SDL_GetError()
-        );
-        SDL_Quit();
-        exit(1);
-    }
-
-    *context = SDL_GL_CreateContext(*window);
-
-    if (*context == NULL) {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_ERROR,
-            ERROR_STR "Couldn't creating OpenGL context: %s\n",
-            SDL_GetError()
-        );
-        SDL_DestroyWindow(*window);
-        SDL_Quit();
-        exit(1);
-    }
-
-    if (!gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress)) {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_ERROR, 
-            ERROR_STR "Failed to load GLAD: %s\n", SDL_GetError()
-        );
-        SDL_Quit();
-        exit(1);
-    }
-
-    // post configuration during initialization
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    printf(INFO_STR "Vendor:   %s\n", glGetString(GL_VENDOR));
-    printf(INFO_STR "Renderer: %s\n", glGetString(GL_RENDERER));
-    printf(INFO_STR "Version:  %s\n", glGetString(GL_VERSION));
-    printf(SUCCESS_STR "Successfully initialized\n");
-}
-
-void deinitialize(SDL_Window **window, SDL_GLContext *context) {
-    printf(END_STR "Terminating the program\n");
-    printf(END_STR "Destroying SDL Window\n");
-    SDL_DestroyWindow(*window);
-    printf(END_STR "Uninitializing SDL Subsystems\n");
-    SDL_Quit();
-    printf(END_STR "Destroying OpenGL context\n");
-    SDL_GL_DestroyContext(*context);
-
-    printf(END_STR "Done!\n");
-}
+// #include "utils/style.h"
 
 int main(int argc, char **argv) {
     int success;
@@ -105,52 +21,34 @@ int main(int argc, char **argv) {
     SDL_GLContext context = NULL;
     bool running = true;
 
-    initialize(&window, &context);
+    sdl_gl_init(&window, &context);
 
     // build and compile the shader program
     // ------------------------------------
-    // vertex shader
-    shader_t vertex_shader;
-    vertex_shader.source = parse_shader("shaders/triangle.vert");
-    vertex_shader.id = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader.id, 1, &(vertex_shader.source), NULL);
-    glCompileShader(vertex_shader.id);
+    unsigned int shader_program = glCreateProgram();
 
-    glGetShaderiv(vertex_shader.id, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertex_shader.id, 512, NULL, infoLog);
-        printf(ERROR_STR "Vertex: compilation failed: %s\n", infoLog);
-    }
+    // vertex shader
+    shader_t vertex_shader = shader_load_source(
+        "shaders/triangle.vert", GL_VERTEX_SHADER
+    );
+    shader_compile(&vertex_shader);
+    shader_attach(shader_program, &vertex_shader);
 
     // fragment shader
-    shader_t fragment_shader;
-    fragment_shader.source = parse_shader("shaders/color.frag");
-    fragment_shader.id = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader.id, 1, &(fragment_shader.source), NULL);
-    glCompileShader(fragment_shader.id);
+    shader_t fragment_shader = shader_load_source(
+        "shaders/color.frag", GL_FRAGMENT_SHADER
+    );
+    shader_compile(&fragment_shader);
+    shader_attach(shader_program, &fragment_shader);
 
-    glGetShaderiv(fragment_shader.id, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragment_shader.id, 512, NULL, infoLog);
-        printf(ERROR_STR "Fragment: compilation failed: %s\n", infoLog);
-    }
-
-    // link shaders
-    unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertex_shader.id);
-    glAttachShader(shaderProgram, fragment_shader.id);
-    glLinkProgram(shaderProgram);
-
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-    }
-    glDeleteShader(vertex_shader.id);
-    glDeleteShader(fragment_shader.id);
+    shader_link_program(shader_program);
+    shader_free(&vertex_shader);
+    shader_free(&fragment_shader);
 
     // setup vertex data and buffers then configure vertex attributes
     // ----------------------------------
     float vertices[] = {
+        // front face
         -0.5f, -0.5f, 0.0f, // bottom left
         0.5f, -0.5f, 0.0f, // bottom right
         -0.5f, 0.5f, 0.0f,   // top left
@@ -177,23 +75,23 @@ int main(int argc, char **argv) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-
-    bool toggle_polygon_mode = false;
-
     SDL_Event event;
-
     uint64_t ticks;
+    bool toggle_polygon_mode = false;
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT) {
                 running = false;
             }
 
-            if (event.key.key == SDLK_0 && event.key.down) {
-                (toggle_polygon_mode) ? 
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL) :
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                toggle_polygon_mode = !toggle_polygon_mode;
+            if (event.type == SDL_EVENT_KEY_DOWN) {
+                if (event.key.key == SDLK_0) {
+                    glPolygonMode(GL_FRONT_AND_BACK, (toggle_polygon_mode) ?
+                                  GL_LINE : GL_FILL);
+                    toggle_polygon_mode = !toggle_polygon_mode;
+                } else if (event.key.key == SDLK_ESCAPE) {
+                    running = false;
+                }
             }
         }
 
@@ -201,13 +99,13 @@ int main(int argc, char **argv) {
         ticks = SDL_GetTicks();
         float time_value = (float) ticks / 1000;
         float green_value = (sin(time_value / 2.0f)) + 0.5f;
-        int vertex_color_location = glGetUniformLocation(shaderProgram, "vertex_color");
+        int vertex_color_location = glGetUniformLocation(shader_program, "vertex_color");
 
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
+        glUseProgram(shader_program);
         glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -216,6 +114,8 @@ int main(int argc, char **argv) {
         SDL_GL_SwapWindow(window);
     }
 
-    deinitialize(&window, &context);
+    glDeleteProgram(shader_program);
+
+    sdl_gl_shutdown(&window, &context);
     return 0;
 }
