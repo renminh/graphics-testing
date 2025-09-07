@@ -5,117 +5,114 @@
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_timer.h>
 
-#include <math.h>
-// #include <stdio.h>
-#include <stdlib.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
+
 #include <stdint.h>
 
-#include "graphics.h"
-#include "shaders/shader.h"
-// #include "utils/style.h"
+#include "engine.h"
+#include "window.h"
+#include "input/input.h"
+#include "graphics/renderer.h"
+#include "graphics/shader.h"
+#include "utils/time.h"
 
-int main(int argc, char **argv) {
-    int success;
-    char infoLog[512];
-    SDL_Window *window = NULL;
-    SDL_GLContext context = NULL;
-    bool running = true;
+void render(void);
 
-    sdl_gl_init(&window, &context);
+GLuint vao;
+GLuint vbo;
+GLuint shader_program;
 
-    // build and compile the shader program
-    // ------------------------------------
-    unsigned int shader_program = glCreateProgram();
+int main(int argc, char **argv)
+{
 
-    // vertex shader
-    shader_t vertex_shader = shader_load_source(
-        "shaders/triangle.vert", GL_VERTEX_SHADER
-    );
-    shader_compile(&vertex_shader);
-    shader_attach(shader_program, &vertex_shader);
+	struct renderer renderer = {
+		.draw_wireframe = false,
+	};
 
-    // fragment shader
-    shader_t fragment_shader = shader_load_source(
-        "shaders/color.frag", GL_FRAGMENT_SHADER
-    );
-    shader_compile(&fragment_shader);
-    shader_attach(shader_program, &fragment_shader);
+	struct window window = {
+		.handle = NULL,
+		.frames = 0,
+	};
+	window.last_frame = NOW();
+	window.last_second = NOW();
 
-    shader_link_program(shader_program);
-    shader_free(&vertex_shader);
-    shader_free(&fragment_shader);
+	SDL_GLContext context = NULL;
 
-    // setup vertex data and buffers then configure vertex attributes
-    // ----------------------------------
-    float vertices[] = {
-        // front face
-        -0.5f, -0.5f, 0.0f, // bottom left
-        0.5f, -0.5f, 0.0f, // bottom right
-        -0.5f, 0.5f, 0.0f,   // top left
-        // second triangle
-        0.5f, 0.5f, 0.0f, // top right
-        -0.5f, 0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-    };
+	struct engine engine = {
+		.running = true,
+		.renderer = renderer,
+		.window = window,
+		.context = context
+	};
 
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
+	window_gl_create(&engine.window, &engine.context);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    
-    glVertexAttribPointer(
-        0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
-        (void *) 0
-    );
-    glEnableVertexAttribArray(0);
+	// shaders
+	shader_program = glCreateProgram();
+	struct shader vertex_shader = shader_load_source(
+		"res/shaders/basic.vert", GL_VERTEX_SHADER
+	);
+	shader_compile(&vertex_shader);
+	shader_attach(shader_program, &vertex_shader);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    SDL_Event event;
-    uint64_t ticks;
-    bool toggle_polygon_mode = false;
-    while (running) {
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT) {
-                running = false;
-            }
-
-            if (event.type == SDL_EVENT_KEY_DOWN) {
-                if (event.key.key == SDLK_0) {
-                    glPolygonMode(GL_FRONT_AND_BACK, (toggle_polygon_mode) ?
-                                  GL_LINE : GL_FILL);
-                    toggle_polygon_mode = !toggle_polygon_mode;
-                } else if (event.key.key == SDLK_ESCAPE) {
-                    running = false;
-                }
-            }
-        }
+	struct shader fragment_shader = shader_load_source(
+		"res/shaders/basic.frag", GL_FRAGMENT_SHADER
+	);
+	shader_compile(&fragment_shader);
+	shader_attach(shader_program, &fragment_shader);
 
 
-        ticks = SDL_GetTicks();
-        float time_value = (float) ticks / 1000;
-        float green_value = (sin(time_value / 2.0f)) + 0.5f;
-        int vertex_color_location = glGetUniformLocation(shader_program, "vertex_color");
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 
+	GLfloat vertices[] = {
+		-0.5f, -0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f,
+		0.0f, 0.5f, 0.0f,
+	};
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+	// create vertex buffer object to store polygon
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,
+		GL_STATIC_DRAW);
 
-        glUseProgram(shader_program);
-        glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+	// specify location of data within buffer
+	glVertexAttribPointer(
+		0, 3, GL_FLOAT, GL_FALSE,
+		3 * sizeof(GLfloat), (void *)0
+	);
+	glEnableVertexAttribArray(0);
 
-        // swap front and back framebuffer
-        SDL_GL_SwapWindow(window);
-    }
+	shader_link_program(shader_program);
+	shader_free(&vertex_shader);
+	shader_free(&fragment_shader);
+	glUseProgram(shader_program);
 
-    glDeleteProgram(shader_program);
+	while (engine.running) {
+		poll_input(&engine);
 
-    sdl_gl_shutdown(&window, &context);
-    return 0;
+		render();
+		window_update_fps(&engine.window);
+		SDL_GL_SwapWindow(engine.window.handle);
+	}
+
+	glDeleteProgram(shader_program);
+	glDeleteBuffers(1, &vbo);
+	glDeleteVertexArrays(1, &vao);
+
+	window_gl_destroy(&engine.window, &engine.context);
+	return EXIT_SUCCESS;
+}
+
+void render(void)
+{
+	// clear render output and depth buffer
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glBindVertexArray(vao);
+
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
