@@ -34,6 +34,17 @@ one by one. This is similar to batching?
  - in reality, it's not actually full polgyons but points, or numbers, just
  arrays of numbers without amny interpretation
 
+## Use of EBO
+
+Element buffer object
+OpenGL works primarily with triangles but because of the nature of the game
+being composed of pixels -> meaning we work with quads instead of triangles
+we end up reusing vertices during the construction of a rectangle when
+passing in vertices to the vertex shader
+
+ebo allows us to store the indices instead and does indexed drawing
+![EBO Indices](pictures/ebo-indices.png "EBO Indices")
+
 ## textures
 
 ![Texture Coordinates](pictures/texture_coords.png "Texture Coordinates")

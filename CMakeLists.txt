@@ -9,8 +9,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # This assumes the SDL source is available in vendored/SDL
 add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
+
+# add glad
 add_library(glad STATIC vendored/glad/src/glad.c)
 target_include_directories(glad PUBLIC vendored/glad/include)
+
+# add cglm
+add_library(cglm INTERFACE)
+target_include_directories(cglm INTERFACE
+    vendored/cglm/include
+)
 
 find_package(OpenGL REQUIRED)
 
@@ -24,9 +32,10 @@ target_include_directories(stb INTERFACE
 add_executable(
     hello 
     src/main.c
-    src/graphics/shader.c
-    src/window.c
+    src/window/window.c
     src/input/input.c
+    src/shader/shader.c
+    src/renderer/renderer.c
 )
 
 target_compile_options(
@@ -41,4 +50,5 @@ target_link_libraries(hello
         glad
         m
         stb
+        cglm
 )

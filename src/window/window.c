@@ -4,11 +4,12 @@
 
 #include "window.h"
 #include "SDL3/SDL_video.h"
-#include "utils/time.h"
-#include "utils/debug.h"
-#include "utils/style.h"
+#include "../utils/time.h"
+#include "../utils/utils.h"
+#include "../utils/style.h"
+#include "../types.h"
 
-void window_gl_create(struct window *w, SDL_GLContext *context)
+void window_gl_create(struct window *w)
 {
 	printf(LINIT "Initializing OpenGL and SDL Subsystems\n");
 
@@ -38,17 +39,24 @@ void window_gl_create(struct window *w, SDL_GLContext *context)
 	if (handle == NULL)
 		SDLDIE("Couldn't create SDL window");
 
-	*context = SDL_GL_CreateContext(handle);
+	w->context = SDL_GL_CreateContext(handle);
 
-	if (*context == NULL)
+	if (w->context == NULL)
 		SDLDIE("Couldn't create OpenGL context");
 
 	if (!gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress))
 		SDLDIE("Failed to load GLAD");
 
+	// set defaults
 	w->handle = handle;
+	w->frames = 0;
+	w->last_frame = NOW();
+	w->last_second = NOW();
 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	w->height = WINDOW_HEIGHT;
+	w->width = WINDOW_WIDTH;
 
 	// set context inital attributes
 	if (!SDL_GL_SetSwapInterval(VSYNC_SETTING)) {
@@ -56,8 +64,8 @@ void window_gl_create(struct window *w, SDL_GLContext *context)
 	}
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+	//glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
 
@@ -67,11 +75,11 @@ void window_gl_create(struct window *w, SDL_GLContext *context)
 	printf(LOK "Successfully initialized\n");
 }
 
-void window_gl_destroy(struct window *w, SDL_GLContext *context)
+void window_gl_destroy(struct window *w)
 {
 	printf(LEND "Destroying OpenGL context\n");
-	SDL_GL_DestroyContext(*context);
-	*context = NULL;
+	SDL_GL_DestroyContext(w->context);
+	w->context = NULL;
 
 	printf(LEND "Destroying SDL Window\n");
 	SDL_DestroyWindow(w->handle);
@@ -79,13 +87,11 @@ void window_gl_destroy(struct window *w, SDL_GLContext *context)
 
 	printf(LEND "Uninitializing SDL Subsystems\n");
 	SDL_Quit();
-
-	printf(LEND "Done!\n");
 }
 
 void window_update_fps(struct window *w)
 {
-	const uint64_t now = NOW();
+	const u64 now = NOW();
 
 	w->frame_delta = now - w->last_frame;
 	w->last_frame = now;

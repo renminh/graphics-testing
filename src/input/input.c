@@ -3,26 +3,26 @@
 #include <stdio.h>
 #include "../utils/style.h"
 
-void poll_input(struct engine *engine)
+void poll_input(bool *running, struct renderer *r)
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		if (event.type == SDL_EVENT_QUIT) {
-			engine->running = false;
+			*running = false;
 		}
 
 		if (event.type == SDL_EVENT_KEY_DOWN) {
 			if (event.key.key == SDLK_0) {
+				r->draw_wireframe = !r->draw_wireframe;
 				glPolygonMode(
 					GL_FRONT_AND_BACK, 
-					(engine->renderer.draw_wireframe) ? GL_LINE : GL_FILL
+					(r->draw_wireframe) ? GL_LINE : GL_FILL
 				);
-				printf(LDBG "%s\n", (engine->renderer.draw_wireframe) ?
-					"Wireframe is being drawn" : "Wireframe is off"
+				printf(LDBG "%s\n", (r->draw_wireframe) ?
+					"Wireframe drawn" : "Wireframe is off"
 				);
-				engine->renderer.draw_wireframe = !engine->renderer.draw_wireframe;
 			} else if (event.key.key == SDLK_ESCAPE) {
-				engine->running = false;
+				*running = false;
 			}
 		}
 	}

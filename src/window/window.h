@@ -2,7 +2,7 @@
 #define WINDOW_H 
 
 #include <SDL3/SDL_video.h>
-#include <stdint.h>
+#include "../types.h"
 
 #define SDL_INIT_FLAGS      (SDL_INIT_VIDEO)
 #define SDL_WINDOW_FLAGS    (SDL_WINDOW_OPENGL|\
@@ -22,19 +22,20 @@
  *		1: on 
  *		-1: adaptive
  */
-#define VSYNC_SETTING 0
+#define VSYNC_SETTING 1
 
 struct window {
 	SDL_Window *handle;
+	SDL_GLContext context;
+	u32 width, height;
 
 	// timing variables
-	uint64_t last_second;
-	uint64_t frames, fps, last_frame, frame_delta;
+	u64 last_second;
+	u64 frames, fps, last_frame, frame_delta;
 };
 
-void window_gl_create(struct window *w, SDL_GLContext *context);
-void window_gl_destroy(struct window *w, SDL_GLContext *context);
-
+void window_gl_create(struct window *w);
+void window_gl_destroy(struct window *w);
 void window_update_fps(struct window *w);
 
 #endif

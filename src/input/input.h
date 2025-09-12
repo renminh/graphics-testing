@@ -2,8 +2,8 @@
 #define INPUT_H
 
 #include <SDL3/SDL_events.h>
-#include "../engine.h"
+#include "../renderer/renderer.h"
 
-void poll_input(struct engine *engine);
+void poll_input(bool *running, struct renderer *r);
 
 #endif
