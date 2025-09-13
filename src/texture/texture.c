@@ -4,6 +4,7 @@
 
 #include "texture.h"
 #include "../utils/style.h"
+#include "glad/glad.h"
 
 struct texture *texture_create(const char *path)
 {
@@ -45,6 +46,10 @@ struct texture *texture_create(const char *path)
 	glTexParameteri(
 		GL_TEXTURE_2D,
 		GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR
+	);
+	glTexParameteri(
+		GL_TEXTURE_2D,
+		GL_TEXTURE_MIN_FILTER, GL_LINEAR
 	);
 
 	glTexImage2D(

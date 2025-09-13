@@ -14,8 +14,8 @@ void main() {
     // w is not used as a position in space but for something
     // called perspective division
 
-    // gl_Position = projection * model * vec4(a_pos, 1.0);
-    gl_Position = vec4(a_pos, 1.0);
+    gl_Position = projection * model * vec4(a_pos, 1.0);
+    // gl_Position = vec4(a_pos, 1.0);
     uvs = a_uvs;
 
 }

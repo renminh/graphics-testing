@@ -1,14 +1,17 @@
 #include <glad/glad.h>
-#include "input.h"
+#include <SDL3/SDL_events.h>
 #include <stdio.h>
-#include "../utils/style.h"
 
-void poll_input(bool *running, struct renderer *r)
+#include "input.h"
+#include "../utils/style.h"
+#include "../state.h"
+
+void poll_input(struct renderer *r, struct scene *s)
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		if (event.type == SDL_EVENT_QUIT) {
-			*running = false;
+			running = false;
 		}
 
 		if (event.type == SDL_EVENT_KEY_DOWN) {
@@ -18,9 +21,29 @@ void poll_input(bool *running, struct renderer *r)
 				printf(LDBG "%s\n", (r->draw_wireframe) ?
 					"Wireframe drawn" : "Wireframe is off"
 				);
-			} else if (event.key.key == SDLK_ESCAPE) {
-				*running = false;
 			}
+
+			if (event.key.key == SDLK_ESCAPE) {
+				running = false;
+			}
+
+			if (event.key.key == SDLK_A) {
+				s->models[0]->position[0] -= 20;
+			}
+
+			if (event.key.key == SDLK_W) {
+				s->models[0]->position[1] += 20;
+			}
+
+			if (event.key.key == SDLK_D) {
+				s->models[0]->position[0] += 20;
+			}
+
+			if (event.key.key == SDLK_S) {
+				s->models[0]->position[1] -= 20;
+			}
+
+
 		}
 	}
 

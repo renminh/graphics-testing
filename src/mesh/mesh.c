@@ -23,7 +23,7 @@ struct mesh *mesh_create_quad(void)
 
 	u32 indices[] = {0, 1, 3, 1, 2, 3};
 
-	quad->indexCount = sizeof(indices) / sizeof(indices[0]);
+	quad->index_count = sizeof(indices) / sizeof(indices[0]);
 
 	glGenVertexArrays(1, &quad->vao);
 	glGenBuffers(1, &quad->vbo);

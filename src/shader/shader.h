@@ -54,11 +54,11 @@ void shader_use(const struct shader *s);
  */
 void shader_destroy(struct shader *s);
 
-// void shader_uniform_mat4(struct shader *s, uniform_enum type, mat4 m);
 
 /*
  * Below are functions that operate... TODO
  */
+void shader_uniform_mat4(struct shader *s, uniform_enum type, mat4 m);
 void shader_uniform_texture2D(struct shader *s, struct texture *t, GLuint n);
 void shader_uniform_float(struct shader *s, uniform_enum type, f32 f);
 void shader_uniform_vec2(struct shader *s, uniform_enum type, vec2 v);

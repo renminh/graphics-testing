@@ -12,7 +12,7 @@ struct mesh {
 	GLuint vao;
 	GLuint vbo;
 	GLuint ebo;
-	GLsizei indexCount;
+	GLsizei index_count;
 };
 
 struct mesh *mesh_create_quad(void);

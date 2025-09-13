@@ -39,6 +39,8 @@ add_executable(
     src/renderer/renderer.c
     src/texture/texture.c
     src/mesh/mesh.c
+    src/model/model.c
+    src/scene/scene.c
 )
 
 target_compile_options(

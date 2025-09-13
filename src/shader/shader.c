@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "shader.h"
+#include "glad/glad.h"
 #include "shader_utils.h"
 
 /*
@@ -59,32 +60,44 @@ void shader_destroy(struct shader *s)
 	free(s);
 }
 
+
+void shader_uniform_mat4(struct shader *s, uniform_enum type, mat4 m)
+{
+	glUniformMatrix4fv(s->uniforms[type], 1, GL_FALSE, (const GLfloat *) m);
+}
+
 void shader_uniform_texture2D(struct shader *s, struct texture *t, GLuint n)
 {
 	glActiveTexture(GL_TEXTURE0 + n);
 	glBindTexture(GL_TEXTURE_2D, t->id);
 	glUniform1i(s->uniforms[UNIFORM_TEXTURE_ID], n);
 }
+
 void shader_uniform_float(struct shader *s, uniform_enum type, f32 f)
 {
 	glUniform1f(s->uniforms[type], f);
 }
+
 void shader_uniform_vec2(struct shader *s, uniform_enum type, vec2 v)
 {
 	glUniform2f(s->uniforms[type], v[VEC_X], v[VEC_Y]);
 }
+
 void shader_uniform_vec3(struct shader *s, uniform_enum type, vec3 v)
 {
 	glUniform3f(s->uniforms[type], v[VEC_X], v[VEC_Y], v[VEC_Z]);
 }
+
 void shader_uniform_vec4(struct shader *s, uniform_enum type, vec4 v)
 {
 	glUniform4f(s->uniforms[type], v[VEC_X], v[VEC_Y], v[VEC_Z], v[VEC_W]);
 }
+
 void shader_uniform_int(struct shader *s, uniform_enum type, i32 v)
 {
 	glUniform1i(s->uniforms[type], v);
 }
+
 void shader_uniform_uint(struct shader *s, uniform_enum type, u32 v)
 {
 	glUniform1ui(s->uniforms[type], v);
