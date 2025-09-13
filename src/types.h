@@ -3,6 +3,15 @@
 
 #include <stdint.h>
 
+
+/*
+ * constants are defined for the typedef vecs in CGLM
+ */
+#define VEC_X 0
+#define VEC_Y 1
+#define VEC_Z 2
+#define VEC_W 3
+
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;

@@ -1,16 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "shader.h"
-#include "../types.h"
-#include "../utils/style.h"
-#include <glad/glad.h>
-
-static char *file_to_shader(const char *file_path);
-static GLuint shader_load_source(const char *source, GLenum type);
-static void shader_compile(GLuint id);
-static void shader_link_program(GLuint shader_program);
-static void shader_get_uniform_locations(struct shader *s);
+#include "shader_utils.h"
 
 /*
  * Uniform Names match the enum in shader.h
@@ -18,12 +9,6 @@ static void shader_get_uniform_locations(struct shader *s);
  *
  * these names are also taken from the glsl shaders
  */
-static const char *uniform_names[] = {
-	"color",
-	"texture_id",
-	"projection",
-	"model",
-};
 
 struct shader *shader_create(const char *vs_path, const char *fs_path)
 {
@@ -62,7 +47,7 @@ struct shader *shader_create(const char *vs_path, const char *fs_path)
 	return shader;
 }
 
-void shader_use(struct shader *s)
+void shader_use(const struct shader *s)
 {
 	glUseProgram(s->program);
 }
@@ -74,96 +59,33 @@ void shader_destroy(struct shader *s)
 	free(s);
 }
 
-GLuint shader_get_program(struct shader *s)
+void shader_uniform_texture2D(struct shader *s, struct texture *t, GLuint n)
 {
-	return s->program;
+	glActiveTexture(GL_TEXTURE0 + n);
+	glBindTexture(GL_TEXTURE_2D, t->id);
+	glUniform1i(s->uniforms[UNIFORM_TEXTURE_ID], n);
 }
-
-static void shader_get_uniform_locations(struct shader *s)
+void shader_uniform_float(struct shader *s, uniform_enum type, f32 f)
 {
-	s->uniforms = (GLint *) malloc(sizeof(GLint) * SHADER_UNIFORM_COUNT);
-
-	if (s->uniforms == NULL) {
-		perror("malloc");
-		exit(1);
-	}
-
-	for (int i = 0; i < SHADER_UNIFORM_COUNT; i++) {
-		GLint id = glGetUniformLocation(s->program, uniform_names[i]);
-
-		if (id == -1) {
-			fprintf(
-				stderr,
-				LERR "Failed to retrive uniform '%s'\n", uniform_names[i]
-			);
-		}
-
-		s->uniforms[i] = id;
-	}
+	glUniform1f(s->uniforms[type], f);
 }
-
-// loads GLSL shader from source
-static GLuint shader_load_source(const char *source, GLenum type)
+void shader_uniform_vec2(struct shader *s, uniform_enum type, vec2 v)
 {
-	GLuint id = glCreateShader(type);
-	glShaderSource(id, 1,  (const GLchar * const *) &source, NULL);
-	return id;
+	glUniform2f(s->uniforms[type], v[VEC_X], v[VEC_Y]);
 }
-
-static void shader_compile(GLuint id)
+void shader_uniform_vec3(struct shader *s, uniform_enum type, vec3 v)
 {
-	i32 success;
-	char info_log[512];
-
-	glCompileShader(id);
-	glGetShaderiv(id, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(id, 512, NULL, info_log);
-		fprintf(
-			stderr, LERR "Shader failed to compile: %s\n", info_log
-		);
-	} else {
-		printf(LOK "Shader compiled!\n");
-	}
+	glUniform3f(s->uniforms[type], v[VEC_X], v[VEC_Y], v[VEC_Z]);
 }
-
-
-static void shader_link_program(GLuint shader_program)
+void shader_uniform_vec4(struct shader *s, uniform_enum type, vec4 v)
 {
-	i32 success;
-	char info_log[512];
-
-	glLinkProgram(shader_program);
-
-	glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shader_program, 512, NULL, info_log);
-		fprintf(
-			stderr, LERR "Shader program failed to link: %s\n", info_log
-		);
-
-	}
+	glUniform4f(s->uniforms[type], v[VEC_X], v[VEC_Y], v[VEC_Z], v[VEC_W]);
 }
-
-static char *file_to_shader(const char *file_path)
+void shader_uniform_int(struct shader *s, uniform_enum type, i32 v)
 {
-	char *buffer = NULL;
-	i64 length;
-
-	FILE *file = fopen(file_path, "rb");
-	if (file == NULL) {
-		perror("fopen");
-		exit(1);
-	}
-
-	fseek(file, 0, SEEK_END);
-	length = ftell(file);
-	// include null terminator
-	buffer = (char *)malloc(length + 1);
-	fseek(file, 0, SEEK_SET);
-	fread(buffer, length, 1, file);
-	fclose(file);
-	buffer[length] = '\0';
-
-	return buffer;
+	glUniform1i(s->uniforms[type], v);
+}
+void shader_uniform_uint(struct shader *s, uniform_enum type, u32 v)
+{
+	glUniform1ui(s->uniforms[type], v);
 }

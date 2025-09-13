@@ -1,25 +1,70 @@
-#include <stdint.h>
-#include <glad/glad.h>
-
 #ifndef SHADER_H
 #define SHADER_H
 
-typedef enum {
-	U_COLOR,
-	U_TEXTURE_ID,
-	U_PROJECTION,
-	U_MODEL,
+#include <stdint.h>
+#include <glad/glad.h>
+#include <cglm/cglm.h>
+#include "../texture/texture.h"
 
-	SHADER_UNIFORM_COUNT
-} shader_uniform;
+#include "../types.h"
+
+typedef enum {
+	UNIFORM_COLOR,
+	UNIFORM_TEXTURE_ID,
+	UNIFORM_PROJECTION,
+	UNIFORM_MODEL,
+	MAX_UNIFORMS
+} uniform_enum;
+
+typedef enum {
+	SHADER_DEFAULT,
+	MAX_SHADERS
+} shader_type_enum;
 
 struct shader {
 	GLuint program;
 	GLint *uniforms;
 };
 
+
+/*
+ * Creates a shader from a vertex-fragment shader pair.
+ * Loads the source codem, compiles, attaches, links, sets up unifomrs, and
+ * returns a pointer to a shader struct
+ * The returned shader must be freed manually using shader_destroy()
+ *
+ * @param vs_path -> path to the vertex shader from project root directory
+ * @param fs_path -> path to the fragment shader from project root directory
+ * @return pointer to a newly created shader struct
+ */
 struct shader *shader_create(const char *vs_path, const char *fs_path);
-void shader_use(struct shader *s);
+
+/*
+ * Activates the shader (wrapper around glUseProgram)
+ *
+ * @param s -> struct shader returned by shader_create()
+ */
+void shader_use(const struct shader *s);
+
+/*
+ * Destroys and frees memory to a shader, its uniforms, and the OpenGL
+ * shader program
+ *
+ * @param s -> struct shader returned by shader_create()
+ */
 void shader_destroy(struct shader *s);
+
+// void shader_uniform_mat4(struct shader *s, uniform_enum type, mat4 m);
+
+/*
+ * Below are functions that operate... TODO
+ */
+void shader_uniform_texture2D(struct shader *s, struct texture *t, GLuint n);
+void shader_uniform_float(struct shader *s, uniform_enum type, f32 f);
+void shader_uniform_vec2(struct shader *s, uniform_enum type, vec2 v);
+void shader_uniform_vec3(struct shader *s, uniform_enum type, vec3 v);
+void shader_uniform_vec4(struct shader *s, uniform_enum type, vec4 v);
+void shader_uniform_int(struct shader *s, uniform_enum type, i32 v);
+void shader_uniform_uint(struct shader *s, uniform_enum type, u32 v);
 
 #endif

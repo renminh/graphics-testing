@@ -34,8 +34,11 @@ add_executable(
     src/main.c
     src/window/window.c
     src/input/input.c
+    src/shader/shader_utils.c
     src/shader/shader.c
     src/renderer/renderer.c
+    src/texture/texture.c
+    src/mesh/mesh.c
 )
 
 target_compile_options(

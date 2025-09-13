@@ -12,7 +12,6 @@ git clone https://github.com/renminh/graphics-testing.git
 - **Khronos Group** for their work on maintaining the **OpenGL** specification
 - **David Herberth** for the development of **glad**, the OpenGL Loader 
  Library
-
-
+- **Recep Aslantas** for the GLM port, a math library for graphics
 
 

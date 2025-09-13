@@ -5,27 +5,26 @@
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_timer.h>
 
-#include <cglm/cglm.h>
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
 #include "renderer/renderer.h"
 #include "window/window.h"
 #include "input/input.h"
-#include "shader/shader.h"
-
+// #include "shader/shader.h"
+#include "texture/texture.h"
 
 int main(int argc, char **argv)
 {
 	struct renderer renderer;
 	struct window window;
-	bool running = true;
+	struct texture textures_buffer[1024];
+
 
 	window_gl_create(&window);
 	render_init(&renderer);
-	quad_init(&renderer);
 
+	bool running = true;
 	while (running) {
 		poll_input(&running, &renderer);
 

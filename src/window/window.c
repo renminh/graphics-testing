@@ -27,10 +27,9 @@ void window_gl_create(struct window *w)
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-	/*
-    SDL_DisplayMode current_display;
-    SDL_GetCurrentDisplayMode(current_display.displayID);
-    */ // this provides us with current_display.w and current_display.h 
+    // SDL_DisplayMode current_display;
+    // SDL_GetCurrentDisplayMode(current_display.displayID);
+	// this provides us with current_display.w and current_display.h 
 
 	SDL_Window *handle = SDL_CreateWindow(
 		WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_FLAGS
@@ -68,6 +67,8 @@ void window_gl_create(struct window *w)
     //glCullFace(GL_BACK);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	printf(LINFO "Vendor:   %s\n", glGetString(GL_VENDOR));
 	printf(LINFO "Renderer: %s\n", glGetString(GL_RENDERER));

@@ -9,7 +9,6 @@ uniform mat4 projection;
 uniform mat4 model;
 
 void main() {
-    uvs = a_uvs;
 
     // vec x,y,z, w (w part of vec4)
     // w is not used as a position in space but for something
@@ -17,5 +16,6 @@ void main() {
 
     // gl_Position = projection * model * vec4(a_pos, 1.0);
     gl_Position = vec4(a_pos, 1.0);
+    uvs = a_uvs;
 
 }

@@ -14,10 +14,7 @@ void poll_input(bool *running, struct renderer *r)
 		if (event.type == SDL_EVENT_KEY_DOWN) {
 			if (event.key.key == SDLK_0) {
 				r->draw_wireframe = !r->draw_wireframe;
-				glPolygonMode(
-					GL_FRONT_AND_BACK, 
-					(r->draw_wireframe) ? GL_LINE : GL_FILL
-				);
+				DRAW_WIREFRAME(r->draw_wireframe);
 				printf(LDBG "%s\n", (r->draw_wireframe) ?
 					"Wireframe drawn" : "Wireframe is off"
 				);
