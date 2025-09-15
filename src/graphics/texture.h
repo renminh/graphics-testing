@@ -6,16 +6,16 @@
 
 typedef enum {
 	TEXTURE_PLAYER,
+	TEXTURE_TILES,
 	MAX_TEXTURES
 } texture_type_enum;
 
 struct texture {
 	GLuint id;
-	int width;
-	int height;
+	ivec2 size;
 };
 
-struct texture *texture_create(const char *path);
+struct texture texture_create(const char *path);
 void texture_destroy(struct texture *t);
 
 #endif

@@ -1,8 +1,9 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include "../renderer/renderer.h"
+#include "../scene/scene.h"
+#include "../types.h"
 
-void poll_input(struct renderer *r, struct scene *s);
+void poll_input(struct scene *s);
 
 #endif

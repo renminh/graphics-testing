@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include "shader.h"
 #include "glad/glad.h"
@@ -11,9 +10,9 @@
  * these names are also taken from the glsl shaders
  */
 
-struct shader *shader_create(const char *vs_path, const char *fs_path)
+struct shader shader_create(const char *vs_path, const char *fs_path)
 {
-	struct shader *shader = NULL;
+	struct shader shader = {0};
 
 	char *vertex_source = file_to_shader(vs_path);
 	char *fragment_source = file_to_shader(fs_path);
@@ -24,20 +23,12 @@ struct shader *shader_create(const char *vs_path, const char *fs_path)
 	shader_compile(vertex);
 	shader_compile(fragment);
 
-	// after shader compilation
-	shader = (struct shader *) malloc(sizeof(struct shader));
+	shader.id = glCreateProgram();
 
-	if (shader == NULL) {
-		perror("malloc");
-		exit(1);
-	}
-
-	shader->program = glCreateProgram();
-
-	glAttachShader(shader->program, vertex);
-	glAttachShader(shader->program, fragment);
-	shader_link_program(shader->program);
-	shader_get_uniform_locations(shader);
+	glAttachShader(shader.id, vertex);
+	glAttachShader(shader.id, fragment);
+	shader_link_program(shader.id);
+	shader_get_uniform_locations(&shader);
 
 	// cleanup
 	glDeleteShader(vertex);
@@ -50,14 +41,13 @@ struct shader *shader_create(const char *vs_path, const char *fs_path)
 
 void shader_use(const struct shader *s)
 {
-	glUseProgram(s->program);
+	glUseProgram(s->id);
 }
  
 void shader_destroy(struct shader *s)
 {
-	glDeleteProgram(s->program);
+	glDeleteProgram(s->id);
 	free(s->uniforms);
-	free(s);
 }
 
 

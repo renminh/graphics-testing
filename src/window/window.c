@@ -4,9 +4,9 @@
 
 #include "window.h"
 #include "SDL3/SDL_video.h"
-#include "../utils/time.h"
-#include "../utils/utils.h"
-#include "../utils/style.h"
+#include "../util/time.h"
+#include "../util/utils.h"
+#include "../util/style.h"
 #include "../types.h"
 
 void window_gl_create(struct window *w)

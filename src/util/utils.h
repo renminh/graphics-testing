@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_init.h>
-#include "style.h"
+#include "../logging/style.h"
 
 #define SDLDIE(msg) ({\
 	fprintf(stderr, LERR "%s: %s\n", (msg), SDL_GetError());\

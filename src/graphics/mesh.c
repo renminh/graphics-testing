@@ -1,17 +1,10 @@
 #include "mesh.h"
 #include "glad/glad.h"
 #include "../types.h"
-#include <stdlib.h>
-#include <stdio.h>
 
-struct mesh *mesh_create_quad(void)
+struct mesh mesh_create_quad(void)
 {
-	struct mesh *quad = (struct mesh *) (malloc(sizeof(struct mesh)));
-
-	if (quad == NULL) {
-		perror("malloc");
-		exit(1);
-	}
+	struct mesh quad;
 
 	f32 vertices[] = {
 	//  x		y		z		u		v
@@ -23,21 +16,21 @@ struct mesh *mesh_create_quad(void)
 
 	u32 indices[] = {0, 1, 3, 1, 2, 3};
 
-	quad->index_count = sizeof(indices) / sizeof(indices[0]);
+	quad.index_count = sizeof(indices) / sizeof(indices[0]);
 
-	glGenVertexArrays(1, &quad->vao);
-	glGenBuffers(1, &quad->vbo);
-	glGenBuffers(1, &quad->ebo);
+	glGenVertexArrays(1, &quad.vao);
+	glGenBuffers(1, &quad.vbo);
+	glGenBuffers(1, &quad.ebo);
 
 	// bind VAO to the current session
-	glBindVertexArray(quad->vao);
+	glBindVertexArray(quad.vao);
 
 	// vbo automatically gets bound to current bound vertex array
-	glBindBuffer(GL_ARRAY_BUFFER, quad->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, quad.vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	// bind ebo to use indices
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quad->ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quad.ebo);
 	glBufferData(
 		GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW
 	);
@@ -69,5 +62,4 @@ void mesh_destroy(struct mesh *m)
 	glDeleteBuffers(1, &m->ebo);
 	glDeleteBuffers(1, &m->vbo);
 	glDeleteVertexArrays(1, &m->vao);
-	free(m);
 }

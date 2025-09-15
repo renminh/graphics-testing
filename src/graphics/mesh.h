@@ -15,7 +15,7 @@ struct mesh {
 	GLsizei index_count;
 };
 
-struct mesh *mesh_create_quad(void);
+struct mesh mesh_create_quad(void);
 void mesh_destroy(struct mesh *m);
 
 #endif

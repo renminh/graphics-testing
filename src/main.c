@@ -1,5 +1,3 @@
-#include "mesh/mesh.h"
-#include "texture/texture.h"
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -11,10 +9,12 @@
 #include <stb/stb_image.h>
 
 #include "state.h"
-#include "renderer/renderer.h"
+#include "graphics/renderer.h"
 #include "scene/scene.h"
 #include "window/window.h"
 #include "input/input.h"
+
+#include "util/time.h"
 
 bool running = true;
 
@@ -28,20 +28,19 @@ int main(int argc, char **argv)
 	renderer_init(&renderer);
 	scene_init(&scene);
 
-	scene_create_model(
-		&scene,
-		renderer.meshes[MESH_QUAD],
-		renderer.textures[TEXTURE_PLAYER],
-		(vec3) {450, 200, 0},
-		(vec3) {32, 32, 1},
-		0
-	);
+	scene_load_level(&scene, &renderer);
+
+	f64 timestep = (1.0 / 120.0);
+	f64 last_tick = NOW_SECONDS() - timestep;
 
 	while (running) {
-		poll_input(&renderer, &scene);
+		while (NOW_SECONDS() >= last_tick + timestep) {
+			poll_input(&scene);
+			window_update_fps(&window);
+			last_tick += timestep;
 
+		}
 		render(&renderer, &scene);
-		window_update_fps(&window);
 		SDL_GL_SwapWindow(window.handle);
 	}
 

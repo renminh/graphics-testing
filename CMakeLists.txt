@@ -34,13 +34,14 @@ add_executable(
     src/main.c
     src/window/window.c
     src/input/input.c
-    src/shader/shader_utils.c
-    src/shader/shader.c
-    src/renderer/renderer.c
-    src/texture/texture.c
-    src/mesh/mesh.c
-    src/model/model.c
+    src/graphics/shader_utils.c
+    src/graphics/shader.c
+    src/graphics/renderer.c
+    src/graphics/texture.c
+    src/graphics/mesh.c
+    src/graphics/atlas.c
     src/scene/scene.c
+    src/util/array_list.c
 )
 
 target_compile_options(

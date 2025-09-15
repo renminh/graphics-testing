@@ -1,16 +1,18 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stb/stb_image.h>
+#include <glad/glad.h>
 
 #include "texture.h"
-#include "../utils/style.h"
-#include "glad/glad.h"
+#include "../util/style.h"
+#include "../types.h"
 
-struct texture *texture_create(const char *path)
+struct texture texture_create(const char *path)
 {
-	struct texture *texture;
+	struct texture texture;
 
-	int width, height, channels;
+	i32 width, height, channels;
 
 	// OpenGL expects the 0.0 coordinate on the y-axis
 	// to be on the bottom side of the image
@@ -24,18 +26,11 @@ struct texture *texture_create(const char *path)
 		exit(1);
 	}
 
-	texture = (struct texture *) malloc(sizeof(struct texture));
 
-	if (texture == NULL) {
-		perror("malloc");
-		exit(1);
-	}
+	memcpy(&texture.size, (ivec2) {width, height}, sizeof(ivec2));
 
-	texture->width = width;
-	texture->height = height;
-
-	glGenTextures(1, &texture->id);
-	glBindTexture(GL_TEXTURE_2D, texture->id);
+	glGenTextures(1, &texture.id);
+	glBindTexture(GL_TEXTURE_2D, texture.id);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

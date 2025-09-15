@@ -1,5 +1,9 @@
 # Graphics Testing
 
+Graphics Programming and Game Programming: Development of a From-Scratch Game 
+engine built in C usinig a Custom OpenGL Renderer
+
+
 ```bash
 git clone https://github.com/renminh/graphics-testing.git
 ```

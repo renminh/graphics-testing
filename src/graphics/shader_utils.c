@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "shader.h"
 #include "../types.h"
-#include "../utils/style.h"
+#include "../util/style.h"
 #include <glad/glad.h>
 
 /*
@@ -16,6 +16,7 @@ static const char *uniform_names[] = {
 	"texture_id",
 	"projection",
 	"model",
+	"uv"
 };
 
 void shader_get_uniform_locations(struct shader *s)
@@ -28,7 +29,7 @@ void shader_get_uniform_locations(struct shader *s)
 	}
 
 	for (int i = 0; i < MAX_UNIFORMS; i++) {
-		GLint id = glGetUniformLocation(s->program, uniform_names[i]);
+		GLint id = glGetUniformLocation(s->id, uniform_names[i]);
 
 		if (id == -1) {
 			fprintf(

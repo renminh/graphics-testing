@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <glad/glad.h>
 #include <cglm/cglm.h>
-#include "../texture/texture.h"
+#include "texture.h"
 
 #include "../types.h"
 
@@ -13,16 +13,18 @@ typedef enum {
 	UNIFORM_TEXTURE_ID,
 	UNIFORM_PROJECTION,
 	UNIFORM_MODEL,
+	UNIFORM_UV,
 	MAX_UNIFORMS
 } uniform_enum;
 
 typedef enum {
 	SHADER_DEFAULT,
+	SHADER_TILE,
 	MAX_SHADERS
 } shader_type_enum;
 
 struct shader {
-	GLuint program;
+	GLuint id;
 	GLint *uniforms;
 };
 
@@ -37,7 +39,7 @@ struct shader {
  * @param fs_path -> path to the fragment shader from project root directory
  * @return pointer to a newly created shader struct
  */
-struct shader *shader_create(const char *vs_path, const char *fs_path);
+struct shader shader_create(const char *vs_path, const char *fs_path);
 
 /*
  * Activates the shader (wrapper around glUseProgram)
