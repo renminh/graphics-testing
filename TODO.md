@@ -1,5 +1,9 @@
 # TODO
 
+TODO refactor texture + renderer + atlas
+
+QUAD IS RECTANGULAR? check model matrix and quad mesh
+
 fix texture atlas to display correct sprite
 - issue (setting sprite size doesn't actually work)
     - if our sprite size is 16x16, it'll show us an extremely zoomed in

@@ -30,8 +30,8 @@ void render(struct renderer *r, struct scene *s)
 
 	renderer_draw_quad_texture(
 		r, TEXTURE_TILES,
-		(vec3) {200, 100, -0.5},
-		(vec3) {32, 32, 1},
+		(vec3) {100, 100, -0.5},
+		(vec3) {TILE_PIXEL_SIZE_X, TILE_PIXEL_SIZE_Y, 1},
 		(vec4) {1, 1, 1, 1},
 		uv_min, uv_max
 	);
@@ -45,8 +45,8 @@ void render(struct renderer *r, struct scene *s)
 
 	renderer_draw_quad_texture(
 		r, TEXTURE_TILES,
-		(vec3) {232, 100, -0.5},
-		(vec3) {32, 32, 1},
+		(vec3) {50, 50, -0.5},
+		(vec3) {TILE_PIXEL_SIZE_X, TILE_PIXEL_SIZE_Y, 1},
 		(vec4) {1, 1, 1, 1},
 		uv_min, uv_max
 	);
@@ -63,9 +63,6 @@ void render(struct renderer *r, struct scene *s)
 
 void renderer_draw_entity(struct renderer *r, struct entity *e, struct model *m)
 {
-	shader_uniform_texture2D(&r->current_shader, m->texture, 0);
-	
-
 	mat4 transform;
 	glm_mat4_identity(transform);
 	glm_translate(transform, e->transform.position);
@@ -73,11 +70,12 @@ void renderer_draw_entity(struct renderer *r, struct entity *e, struct model *m)
 
 	shader_uniform_mat4(&r->current_shader, UNIFORM_MODEL, transform);
 	shader_uniform_vec4(&r->current_shader, UNIFORM_UV, (vec4){0,0,1,1});
+	shader_uniform_vec4(&r->current_shader, UNIFORM_COLOR, (vec4) {1, 1, 1, 1});
+	shader_uniform_texture2D(&r->current_shader, m->texture, 0);
 
 	glBindVertexArray(m->mesh->vao);
 	glDrawElements(GL_TRIANGLES, m->mesh->index_count, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
-
 }
 
 void renderer_use_shader(struct renderer *r, shader_type_enum type)
@@ -92,28 +90,33 @@ void renderer_use_shader(struct renderer *r, shader_type_enum type)
 
 void renderer_init(struct renderer *r)
 {
+	//glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	r->shaders[SHADER_DEFAULT] = shader_create(
 		"res/shaders/default.vert",
 		"res/shaders/default.frag"
 	);
 
-	r->textures[TEXTURE_PLAYER] = texture_create(
-		"res/images/standing-steve.png"
-	);
+	r->textures[TEXTURE_PLAYER] = texture_create("res/images/standing-steve.png");
+	r->textures[TEXTURE_TILES] = texture_create("res/images/tile-sheet.png");
 
-	r->textures[TEXTURE_TILES] = texture_create(
-		"res/images/tile-sheet.png"
-	);
-
-	atlas = atlas_create(
-		*renderer_get_texture(r, TEXTURE_TILES),
-		(ivec2) {300, 300}
-	);
 
 	r->meshes[MESH_QUAD] = mesh_create_quad();
 	r->current_shader = r->shaders[SHADER_DEFAULT];
 	r->current_shader_type = SHADER_DEFAULT;
 
+
+	atlas = atlas_create(
+		renderer_get_texture(r, TEXTURE_TILES),
+		(ivec2) {128, 128}
+	);
 	// setting world space to match renderer's resolution
 	glm_ortho(
 		0, 
@@ -122,7 +125,6 @@ void renderer_init(struct renderer *r)
 		(f32) RENDERER_HEIGHT / RENDERER_SCALE,
 		-1.0, 1.0, r->projection
 	);
-
 }
 
 void renderer_draw_quad_texture(
@@ -142,7 +144,6 @@ void renderer_draw_quad_texture(
 
 	mat4 transform;
 	glm_mat4_identity(transform);
-	glm_mat4_identity(transform);
 	glm_translate(transform, position);
 	glm_scale(transform, scale);
 
@@ -154,13 +155,15 @@ void renderer_draw_quad_texture(
 	glBindVertexArray(mesh->vao);
 	glDrawElements(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
-
 }
 
 void renderer_destroy(struct renderer *r)
 {
 	for (int i = 0; i < MAX_SHADERS; i++)
 		shader_destroy(&r->shaders[i]);
+
+	for (int i = 0; i < MAX_TEXTURES; i++)
+		texture_destroy(&r->textures[i]);
 
 	for (int i = 0; i < MAX_MESHES; i++)
 		mesh_destroy(&r->meshes[i]);

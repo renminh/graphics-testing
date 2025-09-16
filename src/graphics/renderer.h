@@ -13,7 +13,7 @@
 // this is based off a 16x16 tilesmap
 #define RENDERER_WIDTH 512
 #define RENDERER_HEIGHT 320
-#define RENDERER_SCALE 2
+#define RENDERER_SCALE 1
 
 struct renderer {
 	mat4 projection;

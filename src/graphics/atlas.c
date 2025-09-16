@@ -4,11 +4,11 @@
 #include "../math/math.h"
 #include "cglm/vec2.h"
 
-struct atlas atlas_create(struct texture t, ivec2 sprite_size)
+struct atlas atlas_create(struct texture *t, ivec2 sprite_size)
 {
 	struct atlas atlas;
-	atlas.texture_id = t.id;
-	glm_ivec2_copy(t.size, atlas.texture_size);
+	atlas.texture_id = t->id;
+	glm_ivec2_copy(t->size, atlas.texture_size);
 	glm_ivec2_copy(sprite_size, atlas.sprite_size);
 
 	// convert to UV space

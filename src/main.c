@@ -15,6 +15,7 @@
 #include "input/input.h"
 
 #include "util/time.h"
+#include "logging/log.h"
 
 bool running = true;
 
@@ -33,10 +34,10 @@ int main(int argc, char **argv)
 	f64 timestep = (1.0 / 120.0);
 	f64 last_tick = NOW_SECONDS() - timestep;
 
+	LOG_INFO("Starting game loop");
 	while (running) {
 		while (NOW_SECONDS() >= last_tick + timestep) {
 			poll_input(&scene);
-			window_update_fps(&window);
 			last_tick += timestep;
 
 		}

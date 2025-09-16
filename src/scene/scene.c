@@ -2,10 +2,10 @@
 #include <stdio.h>
 
 #include "scene.h"
-#include "../util/style.h"
 #include "entity.h"
 #include "../graphics/renderer.h"
-
+#include "../logging/log.h"
+#include "player.h"
 
 void scene_create_model(struct scene *s, model_type_enum type, 
 						struct mesh *m, struct texture *t)
@@ -30,7 +30,7 @@ void scene_create_entity(struct scene *s, model_type_enum type,
 	entity_set_rotation(&entity, rotation);
 
 	if (array_list_append(s->entities, &entity) != old_len) {
-		fprintf(stderr, LERR "Failed to add entity to the scene\n");
+		LOG_ERR("Failed to add entity to the scene");
 		exit(1);
 	}
 }
@@ -57,7 +57,7 @@ void scene_load_level(struct scene *s, struct renderer *r)
 	scene_create_player(
 		s,
 		(vec3) {200, 100, 0},
-		(vec3) {32, 32, 1},
+		(vec3) {PLAYER_PIXEL_SIZE_X, PLAYER_PIXEL_SIZE_Y, 1},
 		0
 	);
 }

@@ -19,7 +19,6 @@ typedef enum {
 
 typedef enum {
 	SHADER_DEFAULT,
-	SHADER_TILE,
 	MAX_SHADERS
 } shader_type_enum;
 

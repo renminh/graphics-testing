@@ -16,7 +16,6 @@ void main() {
     // called perspective division
 
     gl_Position = projection * model * vec4(a_pos, 1.0);
-    // gl_Position = vec4(a_pos, 1.0);
     uvs = mix(uv.xy, uv.zw, a_uvs);
 
 }

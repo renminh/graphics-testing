@@ -4,7 +4,10 @@
 #include "entity.h"
 #include "../types.h"
 
-#define PLAYER_BASE_VELOCITY 1
+#define PLAYER_BASE_VELOCITY	1
+#define PLAYER_SCALE			2
+#define PLAYER_PIXEL_SIZE_X		(32 * PLAYER_SCALE)
+#define PLAYER_PIXEL_SIZE_Y		(32 * PLAYER_SCALE)
 
 static inline void player_move_left(struct entity *e, i32 units)
 {

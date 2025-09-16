@@ -21,7 +21,7 @@ typedef struct array_list array_list;
  * 
  * Returns a pointer to an allocated array_list struct.
  */
-array_list *array_list_create(size_t item_size, size_t initial_capacity);
+array_list *array_list_create(usize item_size, usize initial_capacity);
 
 /*
  * Appends an item to the end of the array list
@@ -33,7 +33,7 @@ array_list *array_list_create(size_t item_size, size_t initial_capacity);
  * 
  * Return the index of the appended item
  */
-size_t array_list_append(array_list *arr, void *item);
+usize array_list_append(array_list *arr, const void *item);
 
 /*
  * Returns a pointer to the item at the given index in the array list.
@@ -43,7 +43,7 @@ size_t array_list_append(array_list *arr, void *item);
  * 
  * Returns a void pointer to the item which should be casted.
  */
-void *array_list_get(array_list *arr, u32 index);
+void *array_list_get(const array_list *arr, u32 index);
 
 /*
  * Returns the current length of the array list.
@@ -52,7 +52,7 @@ void *array_list_get(array_list *arr, u32 index);
  * 
  * Returns the current length of the array list.
  */
-size_t array_list_length(array_list *arr);
+usize array_list_length(const array_list *arr);
 
 
 /*

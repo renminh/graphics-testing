@@ -2,6 +2,8 @@
 #define WINDOW_H 
 
 #include <SDL3/SDL_video.h>
+#include <SDL3/SDL_init.h>
+
 #include "../types.h"
 
 #define SDL_INIT_FLAGS      (SDL_INIT_VIDEO)
@@ -28,14 +30,9 @@ struct window {
 	SDL_Window *handle;
 	SDL_GLContext context;
 	u32 width, height;
-
-	// timing variables
-	u64 last_second;
-	u64 frames, fps, last_frame, frame_delta;
 };
 
 void window_gl_create(struct window *w);
 void window_gl_destroy(struct window *w);
-void window_update_fps(struct window *w);
 
 #endif

@@ -1,28 +1,27 @@
-#include <stdio.h>
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
+#include <stdlib.h>
 
 #include "window.h"
-#include "SDL3/SDL_video.h"
-#include "../util/time.h"
-#include "../util/utils.h"
-#include "../util/style.h"
-#include "../types.h"
+#include "../logging/log.h"
+#include "SDL3/SDL_error.h"
+
+#define SDLDIE(fmt, ...) ({LOG_ERR(fmt, ##__VA_ARGS__); SDL_Quit(); exit(1);})
 
 void window_gl_create(struct window *w)
 {
-	printf(LINIT "Initializing OpenGL and SDL Subsystems\n");
+	LOG_INIT("Initializing SDL window and OpenGL context");
 
-	if (!SDL_Init(SDL_INIT_VIDEO))
-		SDLDIE("Couldn't initialize SDL subsystems");
+	if (!SDL_Init(SDL_INIT_FLAGS))
+		SDLDIE("Failed to initialize SDL subsystems: %s", SDL_GetError());
 
 	if (!SDL_GL_LoadLibrary(NULL))
-		SDLDIE("Failed to load OpenGL");
+		SDLDIE("Failed to OpenGL: %s", SDL_GetError());
 
+	LOG_INFO("Setting SDL and OpenGL attributes");
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, OPENGL_MAJOR_VERSION);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, OPENGL_MINOR_VERSION);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, OPENGL_PROFILE);
-
 	// ensure double buffering is on with 24bit Z buffer
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -36,74 +35,42 @@ void window_gl_create(struct window *w)
 	);
 
 	if (handle == NULL)
-		SDLDIE("Couldn't create SDL window");
+		SDLDIE("Failed to create SDL window: %s", SDL_GetError());
 
 	w->context = SDL_GL_CreateContext(handle);
 
 	if (w->context == NULL)
-		SDLDIE("Couldn't create OpenGL context");
+		SDLDIE("Couldn't create OpenGL context: %s", SDL_GetError());
 
 	if (!gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress))
 		SDLDIE("Failed to load GLAD");
 
 	// set defaults
 	w->handle = handle;
-	w->frames = 0;
-	w->last_frame = NOW();
-	w->last_second = NOW();
-
-	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
 	w->height = WINDOW_HEIGHT;
 	w->width = WINDOW_WIDTH;
+	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	// set context inital attributes
-	if (!SDL_GL_SetSwapInterval(VSYNC_SETTING)) {
-		printf(LWARN "Unable to disable vsync: %s\n", SDL_GetError());
-	}
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	if (!SDL_GL_SetSwapInterval(VSYNC_SETTING))
+		LOG_WARN("Unable to disable SDL vsync: %s", SDL_GetError());
 
-	//glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
-	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_STENCIL_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	printf(LINFO "Vendor:   %s\n", glGetString(GL_VENDOR));
-	printf(LINFO "Renderer: %s\n", glGetString(GL_RENDERER));
-	printf(LINFO "Version:  %s\n", glGetString(GL_VERSION));
-	printf(LOK "Successfully initialized\n");
+	
+	LOG_INFO("Vendor:   %s", glGetString(GL_VENDOR));
+	LOG_INFO("Renderer: %s", glGetString(GL_RENDERER));
+	LOG_INFO("Version:  %s", glGetString(GL_VERSION));
+	LOG_OK("SDL and OpenGL is initialized");
 }
 
 void window_gl_destroy(struct window *w)
 {
-	printf(LEND "Destroying OpenGL context\n");
+	LOG_END("Destroying OpenGL context");
 	SDL_GL_DestroyContext(w->context);
 	w->context = NULL;
 
-	printf(LEND "Destroying SDL Window\n");
+	LOG_END("Destroying SDL Window");
 	SDL_DestroyWindow(w->handle);
 	w->handle = NULL;
 
-	printf(LEND "Uninitializing SDL Subsystems\n");
+	LOG_END("Uninitializing SDL Subsystems");
 	SDL_Quit();
-}
-
-void window_update_fps(struct window *w)
-{
-	const u64 now = NOW();
-
-	w->frame_delta = now - w->last_frame;
-	w->last_frame = now;
-
-	if (now - w->last_second > NS_PER_SECOND) {
-		w->fps = w->frames;
-		w->frames = 0;
-		w->last_second = now;
-
-		printf("FPS: %lu\n", w->fps);
-	}
-
-	w->frames += 1;
 }
