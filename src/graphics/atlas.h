@@ -5,12 +5,17 @@
 #include <cglm/cglm.h>
 #include "texture.h"
 
-#define TILE_SCALE			1.5
+// deals with the actual display in the screen
+#define TILE_SCALE			2
 #define TILE_PIXEL_SIZE_X	(16 * TILE_SCALE)
 #define TILE_PIXEL_SIZE_Y	(16 * TILE_SCALE)
 
+// sprite size deals with the atlas, and not the actual display
+#define SPRITE_SIZE_X		144
+#define SPRITE_SIZE_Y		144
+
 typedef enum {
-	TILE_GRASS,
+	TILE_GRASS = 1,
 	TILE_STONE,
 	TILE_DIRT,
 } tile_type_enum;
@@ -25,7 +30,8 @@ struct atlas {
 };
 
 struct atlas atlas_create(struct texture *t, ivec2 sprite_size);
-void atlas_get_uv(struct atlas atlas, ivec2 pos,
-				  vec2 uv_min, vec2 uv_max);
+
+void atlas_get_tile(struct atlas *atlas, tile_type_enum type, 
+					vec2 uv_min, vec2 uv_max);
 
 #endif

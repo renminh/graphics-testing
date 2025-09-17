@@ -8,14 +8,6 @@
 
 #include "../types.h"
 
-typedef enum {
-	UNIFORM_COLOR,
-	UNIFORM_TEXTURE_ID,
-	UNIFORM_PROJECTION,
-	UNIFORM_MODEL,
-	UNIFORM_UV,
-	MAX_UNIFORMS
-} uniform_enum;
 
 typedef enum {
 	SHADER_DEFAULT,
@@ -27,38 +19,54 @@ struct shader {
 	GLint *uniforms;
 };
 
+// xmacro for enum and string array parallel mapping :')
+#define XMACRO_UNIFORMS(X)					\
+	X(UNIFORM_COLOR,		"color")		\
+	X(UNIFORM_TEXTURE_ID,	"texture_id")	\
+	X(UNIFORM_PROJECTION,	"projection")	\
+	X(UNIFORM_MODEL,		"model")		\
+	X(UNIFORM_UV,			"uv")			\
+	X(UNIFORM_VIEW,			"view")			\
+	X(UNIFORM_USE_TEXTURE,	"use_texture")
+
+typedef enum {
+	#define TO_ENUM(name, str) name,
+	XMACRO_UNIFORMS(TO_ENUM)
+	#undef TO_ENUM
+	MAX_UNIFORMS
+} uniform_enum;
+
 
 /*
  * Creates a shader from a vertex-fragment shader pair.
  * Loads the source codem, compiles, attaches, links, sets up unifomrs, and
- * returns a pointer to a shader struct
+ * returns a pointer to a shader struct.
  * The returned shader must be freed manually using shader_destroy()
  *
- * @param vs_path -> path to the vertex shader from project root directory
- * @param fs_path -> path to the fragment shader from project root directory
- * @return pointer to a newly created shader struct
+ * vs_path -> path to the vertex shader from project root directory
+ * fs_path -> path to the fragment shader from project root directory
+ *
+ * Returns a pointer to a newly created shader struct.
  */
 struct shader shader_create(const char *vs_path, const char *fs_path);
 
 /*
- * Activates the shader (wrapper around glUseProgram)
+ * Activates the shader. (wrapper around glUseProgram)
  *
- * @param s -> struct shader returned by shader_create()
+ * s -> struct shader returned by shader_create()
  */
 void shader_use(const struct shader *s);
 
 /*
  * Destroys and frees memory to a shader, its uniforms, and the OpenGL
- * shader program
+ * shader program.
  *
- * @param s -> struct shader returned by shader_create()
+ * s -> struct shader returned by shader_create()
  */
 void shader_destroy(struct shader *s);
 
 
-/*
- * Below are functions that operate... TODO
- */
+// for operating on shader uniforms
 void shader_uniform_mat4(struct shader *s, uniform_enum type, mat4 m);
 void shader_uniform_texture2D(struct shader *s, struct texture *t, GLuint n);
 void shader_uniform_float(struct shader *s, uniform_enum type, f32 f);
@@ -67,5 +75,6 @@ void shader_uniform_vec3(struct shader *s, uniform_enum type, vec3 v);
 void shader_uniform_vec4(struct shader *s, uniform_enum type, vec4 v);
 void shader_uniform_int(struct shader *s, uniform_enum type, i32 v);
 void shader_uniform_uint(struct shader *s, uniform_enum type, u32 v);
+void shader_uniform_bool(struct shader *s, uniform_enum type, bool flag);
 
 #endif

@@ -4,6 +4,7 @@
 #include "input.h"
 #include "../state.h"
 #include "../scene/player.h"
+#include "../scene/camera.h"
 
 void poll_input(struct scene *s)
 {
@@ -12,6 +13,17 @@ void poll_input(struct scene *s)
 		if (event.type == SDL_EVENT_QUIT) {
 			running = false;
 		}
+		
+		if (event.type == SDL_EVENT_MOUSE_WHEEL) {
+			if (event.wheel.integer_y > 0) {
+				f32 zoom = s->camera.zoom + 0.2;
+				camera_zoom(&s->camera, zoom);
+			} else if (event.wheel.integer_y < 0) {
+				f32 zoom = s->camera.zoom - 0.2;
+				camera_zoom(&s->camera, zoom);
+			}
+		}
+
 	}
 
 	const bool *keystates = SDL_GetKeyboardState(NULL);

@@ -6,9 +6,10 @@ in vec2 uvs;
 
 uniform vec4 color;
 uniform sampler2D texture_id;
+uniform bool use_texture;
 
 void main() {
-    vec4 texture_color = texture(texture_id, uvs) * color;
+    vec4 texture_color = use_texture ? texture(texture_id, uvs) * color : color;
 
     if (texture_color.a < 0.1)
         discard;

@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "scene.h"
+#include "camera.h"
 #include "entity.h"
 #include "../graphics/renderer.h"
 #include "../logging/log.h"
@@ -60,16 +61,18 @@ void scene_load_level(struct scene *s, struct renderer *r)
 		(vec3) {PLAYER_PIXEL_SIZE_X, PLAYER_PIXEL_SIZE_Y, 1},
 		0
 	);
+
 }
 
-void scene_destroy_entity(struct scene *s, struct entity *e)
+void scene_update_camera(struct scene *s, vec3 attach_to_pos)
 {
-
+	camera_update(&s->camera, attach_to_pos);
 }
 
 void scene_init(struct scene *s)
 {
 	s->entities = array_list_create(sizeof(struct entity), INITIAL_ENTITY_COUNT);
+	s->camera = camera_create();
 }
 
 void scene_destroy(struct scene *s)

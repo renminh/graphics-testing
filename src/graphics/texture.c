@@ -40,9 +40,7 @@ struct texture texture_create(const char *path)
 	glBindTexture(GL_TEXTURE_2D, texture.id);
 	CHECK_GL_ERROR("Failed to bind texture");
 
-	/*
-	 * setting texture attributes best suited for pixel art games
-	 */
+	// setting texture attributes best suited for pixel art games
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -61,7 +59,6 @@ struct texture texture_create(const char *path)
 	// clean up and unbind
 	glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(data);
-
 
 	return texture;
 }

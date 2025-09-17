@@ -4,6 +4,9 @@
 #include "../math/math.h"
 #include "cglm/vec2.h"
 
+static void atlas_get_uv(struct atlas *atlas, ivec2 pos,
+				  vec2 uv_min, vec2 uv_max);
+
 struct atlas atlas_create(struct texture *t, ivec2 sprite_size)
 {
 	struct atlas atlas;
@@ -26,31 +29,43 @@ struct atlas atlas_create(struct texture *t, ivec2 sprite_size)
 
 	return atlas;
 }
-void atlas_get_uv(struct atlas atlas, ivec2 pos,
+
+void atlas_get_tile(struct atlas *atlas, tile_type_enum type, 
+					vec2 uv_min, vec2 uv_max)
+{
+	switch (type) {
+		case TILE_GRASS: atlas_get_uv(atlas, (ivec2) {0, 0}, uv_min, uv_max);  break;
+		case TILE_DIRT: atlas_get_uv(atlas, (ivec2) {1, 0}, uv_min, uv_max);  break;
+		case TILE_STONE: atlas_get_uv(atlas, (ivec2) {2, 0}, uv_min, uv_max);  break;
+		default: atlas_get_uv(atlas, (ivec2) {4, 4}, uv_min, uv_max); break;
+	}
+}
+
+static void atlas_get_uv(struct atlas *atlas, ivec2 pos,
 				  vec2 uv_min, vec2 uv_max)
 {
 	vec2 pos_min;
 
 	glm_vec2_copy(
 		(vec2){
-			(pos[VEC_X] * atlas.sprite_size[VEC_X]),
-			(atlas.size[VEC_Y] - pos[VEC_Y] - 1) * atlas.sprite_size[VEC_Y]
+			(pos[VEC_X] * atlas->sprite_size[VEC_X]),
+			(atlas->size[VEC_Y] - pos[VEC_Y] - 1) * atlas->sprite_size[VEC_Y]
 		},
 		pos_min
 	);
 
 	// min uv
 	vec2 min;
-	glm_vec2_div(pos_min, IVEC2F(atlas.texture_size), min);
+	glm_vec2_div(pos_min, IVEC2F(atlas->texture_size), min);
 	glm_vec2_copy(min, uv_min);
 
 	// max uv
 	vec2 temp;
 	vec2 max;
-	glm_vec2_add(pos_min, IVEC2F(atlas.sprite_size), temp);
+	glm_vec2_add(pos_min, IVEC2F(atlas->sprite_size), temp);
 	glm_vec2_div(
 		temp,
-		IVEC2F(atlas.texture_size), 
+		IVEC2F(atlas->texture_size), 
 		max
 	);
 	glm_vec2_copy(max, uv_max);

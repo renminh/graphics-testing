@@ -41,11 +41,12 @@ add_executable(
     src/graphics/mesh.c
     src/graphics/atlas.c
     src/scene/scene.c
+    src/scene/camera.c
     src/util/array_list.c
 )
 
 target_compile_options(
-    hello PRIVATE -ggdb
+    hello PRIVATE -ggdb -Wall -Wextra -Wuninitialized
 )
 
 # Link to the actual SDL3 library.

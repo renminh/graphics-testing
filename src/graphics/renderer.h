@@ -10,13 +10,19 @@
 #include "texture.h"
 #include "mesh.h"
 #include "../scene/entity.h"
+
 // this is based off a 16x16 tilesmap
-#define RENDERER_WIDTH 512
-#define RENDERER_HEIGHT 320
-#define RENDERER_SCALE 1
+#define RENDERER_SCALE		2.0
+#define RENDERER_WIDTH		(512.0 * RENDERER_SCALE)
+#define RENDERER_HEIGHT		(288.0 * RENDERER_SCALE)
+
+// debug options :)
+#define USE_TEXTURE			false
+#define DRAW_WIREFRAME		true
 
 struct renderer {
 	mat4 projection;
+	mat4 view;
 
 	struct mesh meshes[MAX_MESHES];
 	struct texture textures[MAX_TEXTURES];

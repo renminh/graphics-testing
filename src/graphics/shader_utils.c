@@ -10,18 +10,10 @@
 	GLenum err=glGetError(); \
 	if (err != GL_NO_ERROR) LOG_ERR("%s (GL error: 0x%x)", _s, err);})
 
-/*
- * Uniform Names match the enum in shader.h
- * that is, it must match the index of the enums
- *
- * these names are also taken from the glsl shaders
- */
 static const char *uniform_names[] = {
-	"color",
-	"texture_id",
-	"projection",
-	"model",
-	"uv"
+	#define TO_STR(name, str) str,
+	XMACRO_UNIFORMS(TO_STR)
+	#undef TO_STR
 };
 
 static_assert(

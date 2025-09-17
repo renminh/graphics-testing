@@ -12,44 +12,56 @@
 
 struct atlas atlas;
 
+static vec3 tile_scale = (vec3) {TILE_PIXEL_SIZE_X, TILE_PIXEL_SIZE_Y, 1};
+static vec4 tile_color = (vec4) {1, 1, 1, 1};
+
+
+void render_draw_tile(struct renderer *r, vec3 pos, tile_type_enum type);
+
 void render(struct renderer *r, struct scene *s)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	renderer_use_shader(r, SHADER_DEFAULT);
-	shader_uniform_mat4(&r->current_shader, UNIFORM_PROJECTION, r->projection);
 
-	vec2 uv_min, uv_max;
-	atlas_get_uv(
-		atlas, 
-		(ivec2) {1, 0},
-		uv_min, 
-		uv_max
-	);
+	scene_update_camera(s, s->player.transform.position);
+	shader_uniform_mat4(&r->current_shader, UNIFORM_PROJECTION, s->camera.projection);
+	shader_uniform_mat4(&r->current_shader, UNIFORM_VIEW, s->camera.view);
 
-	renderer_draw_quad_texture(
-		r, TEXTURE_TILES,
-		(vec3) {100, 100, -0.5},
-		(vec3) {TILE_PIXEL_SIZE_X, TILE_PIXEL_SIZE_Y, 1},
-		(vec4) {1, 1, 1, 1},
-		uv_min, uv_max
-	);
+	u32 offset_x = 0;
+	u32 offset_y = 0;
 
-	atlas_get_uv(
-		atlas, 
-		(ivec2) {0, 0},
-		uv_min, 
-		uv_max
-	);
+	u32 tilemap[][12] = {
+		{0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0},
+		{0, 1, 1, 0, 1, 1, 2, 3, 2, 2, 2, 2},
+		{0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1},
+		{2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1},
+		{2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1},
+		{2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1},
+		{2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 2},
+		{3, 3, 2, 3, 3, 3, 3, 3, 2, 2, 2, 2},
+		{3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 2, 2},
+		{3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3},
+		{3, 3, 2, 3, 3, 3, 3, 3, 2, 2, 3, 3},
+		{1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 3},
+		{1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1},
+		{1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 2, 1},
+		{1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 3}
+	};
 
-	renderer_draw_quad_texture(
-		r, TEXTURE_TILES,
-		(vec3) {50, 50, -0.5},
-		(vec3) {TILE_PIXEL_SIZE_X, TILE_PIXEL_SIZE_Y, 1},
-		(vec4) {1, 1, 1, 1},
-		uv_min, uv_max
-	);
+	// SLOW USE BATCHING TO RENDER ALL OF THIS INSTEAD OF SENDING n * n
+	// DRAW CALLS
+	for (u32 row = 0; row < sizeof(tilemap)/sizeof(tilemap[0]); row++) {
+		for (u32 col = 0; col < sizeof(tilemap[0])/sizeof(tilemap[0][0]); col++) {
+			int flipped_row = sizeof(tilemap)/sizeof(tilemap[0]) - 1 - row;
+			int y = offset_y + flipped_row * TILE_PIXEL_SIZE_Y;
+			render_draw_tile(
+				r, 
+				(vec3) {col * TILE_PIXEL_SIZE_X + offset_x, y, 0},
+				tilemap[row][col]
+			);
+		}
+	}
 
 
 	renderer_draw_entity(r, &s->player, &s->models[s->player.model_type]);
@@ -71,6 +83,8 @@ void renderer_draw_entity(struct renderer *r, struct entity *e, struct model *m)
 	shader_uniform_mat4(&r->current_shader, UNIFORM_MODEL, transform);
 	shader_uniform_vec4(&r->current_shader, UNIFORM_UV, (vec4){0,0,1,1});
 	shader_uniform_vec4(&r->current_shader, UNIFORM_COLOR, (vec4) {1, 1, 1, 1});
+
+	shader_uniform_bool(&r->current_shader, UNIFORM_USE_TEXTURE, USE_TEXTURE);
 	shader_uniform_texture2D(&r->current_shader, m->texture, 0);
 
 	glBindVertexArray(m->mesh->vao);
@@ -90,11 +104,12 @@ void renderer_use_shader(struct renderer *r, shader_type_enum type)
 
 void renderer_init(struct renderer *r)
 {
+	glPolygonMode(GL_FRONT_AND_BACK, DRAW_WIREFRAME ? GL_LINE : GL_FILL);
 	//glEnable(GL_CULL_FACE);
     //glCullFace(GL_BACK);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -104,8 +119,8 @@ void renderer_init(struct renderer *r)
 		"res/shaders/default.frag"
 	);
 
-	r->textures[TEXTURE_PLAYER] = texture_create("res/images/standing-steve.png");
-	r->textures[TEXTURE_TILES] = texture_create("res/images/tile-sheet.png");
+	r->textures[TEXTURE_PLAYER] = texture_create("res/textures/standing-steve.png");
+	r->textures[TEXTURE_TILES] = texture_create("res/textures/tile-sheet.png");
 
 
 	r->meshes[MESH_QUAD] = mesh_create_quad();
@@ -115,15 +130,16 @@ void renderer_init(struct renderer *r)
 
 	atlas = atlas_create(
 		renderer_get_texture(r, TEXTURE_TILES),
-		(ivec2) {128, 128}
+		(ivec2) {SPRITE_SIZE_X, SPRITE_SIZE_Y}
 	);
-	// setting world space to match renderer's resolution
-	glm_ortho(
-		0, 
-		(f32) RENDERER_WIDTH / RENDERER_SCALE, 
-		0.0, 
-		(f32) RENDERER_HEIGHT / RENDERER_SCALE,
-		-1.0, 1.0, r->projection
+}
+
+void render_draw_tile(struct renderer *r, vec3 pos, tile_type_enum type)
+{
+	vec2 uv_min, uv_max;
+	atlas_get_tile(&atlas, type, uv_min, uv_max);
+	renderer_draw_quad_texture(
+		r, TEXTURE_TILES, pos, tile_scale, tile_color, uv_min, uv_max
 	);
 }
 
@@ -149,6 +165,7 @@ void renderer_draw_quad_texture(
 
 	shader_uniform_mat4(&r->current_shader, UNIFORM_MODEL, transform);
 	shader_uniform_texture2D(&r->current_shader, renderer_get_texture(r, type), 0);
+	shader_uniform_bool(&r->current_shader, UNIFORM_USE_TEXTURE, USE_TEXTURE);
 	shader_uniform_vec4(&r->current_shader, UNIFORM_COLOR, color);
 	shader_uniform_vec4(&r->current_shader, UNIFORM_UV, tile_uv);
 

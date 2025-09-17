@@ -4,6 +4,7 @@
 #include "model.h"
 #include "../util/array_list.h"
 #include "entity.h"
+#include "camera.h"
 
 #define INITIAL_ENTITY_COUNT 100
 #define PLAYER_ID 0
@@ -12,6 +13,9 @@
 struct renderer;
 
 struct scene {
+	mat4 projection;
+	struct camera camera;
+
 	struct model models[MAX_MODELS];
 	array_list *entities;
 	struct entity player;
@@ -19,6 +23,8 @@ struct scene {
 
 void scene_create_player(struct scene *s, 
 						 vec3 position, vec3 scale, f32 rotation);
+
+void scene_update_camera(struct scene *s, vec3 attach_to_pos);
 void scene_create_model(struct scene *s, model_type_enum type, 
 						struct mesh *m, struct texture *t);
 void scene_create_entity(struct scene *s, u32 model_id, 

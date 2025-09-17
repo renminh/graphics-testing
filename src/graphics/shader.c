@@ -1,4 +1,4 @@
-#include <stdlib.h>
+
 #include <glad/glad.h>
 
 #include "shader.h"
@@ -31,13 +31,6 @@ struct shader shader_create(const char *vs_path, const char *fs_path)
 
 	shader.id = glCreateProgram();
 
-	/*
-	 * binding program object must be done to access uniforms, although GL 4.1 allows 
-	 * the use  of "glProgramUniform()" which takes the program object to modify.
-	 *
-	 * https://stackoverflow.com/questions/42357380/why-must-i-use-a-shader-program-before-i-can-set-its-uniforms
-	 */
-	glUseProgram(shader.id);
 
 
 	if (shader.id == 0) {
@@ -143,4 +136,9 @@ void shader_uniform_int(struct shader *s, uniform_enum type, i32 v)
 void shader_uniform_uint(struct shader *s, uniform_enum type, u32 v)
 {
 	glUniform1ui(s->uniforms[type], v);
+}
+
+void shader_uniform_bool(struct shader *s, uniform_enum type, bool flag)
+{
+	glUniform1i(s->uniforms[type], flag);
 }
