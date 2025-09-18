@@ -63,11 +63,7 @@ static void atlas_get_uv(struct atlas *atlas, ivec2 pos,
 	vec2 temp;
 	vec2 max;
 	glm_vec2_add(pos_min, IVEC2F(atlas->sprite_size), temp);
-	glm_vec2_div(
-		temp,
-		IVEC2F(atlas->texture_size), 
-		max
-	);
+	glm_vec2_div(temp, IVEC2F(atlas->texture_size), max);
 	glm_vec2_copy(max, uv_max);
 }
 

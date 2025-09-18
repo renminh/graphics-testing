@@ -17,8 +17,8 @@
 #define RENDERER_HEIGHT		(288.0 * RENDERER_SCALE)
 
 // debug options :)
-#define USE_TEXTURE			false
-#define DRAW_WIREFRAME		true
+#define USE_TEXTURE			true
+#define DRAW_WIREFRAME		false
 
 struct renderer {
 	mat4 projection;
@@ -37,10 +37,6 @@ void renderer_draw_entity(struct renderer *r, struct entity *e, struct model *m)
 void renderer_use_shader(struct renderer *r, shader_type_enum type);
 void renderer_init(struct renderer *r);
 void renderer_destroy(struct renderer *r);
-void renderer_draw_quad_texture(
-	struct renderer *r, texture_type_enum type,
-	vec3 position, vec2 scale, vec4 color, 
-	vec2 uv_min, vec2 uv_max);
 
 struct mesh *renderer_get_mesh(struct renderer *r, mesh_type_enum type);
 struct texture *renderer_get_texture(struct renderer *r, texture_type_enum type);
